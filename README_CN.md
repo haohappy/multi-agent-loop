@@ -1,6 +1,6 @@
-# cc-review
-
 [English](README.md)
+
+# cc-review
 
 Claude Code 与 Codex CLI 之间的自动化 review 循环。
 

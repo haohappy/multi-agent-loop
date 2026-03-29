@@ -1,3 +1,5 @@
+[中文文档](README_CN.md)
+
 # cc-review
 
 Automated review loop between Claude Code and Codex CLI.
@@ -137,7 +139,3 @@ Each session creates a timestamped directory under `.cc-review/`:
 ## License
 
 MIT
-
----
-
-[中文文档](README_CN.md)
