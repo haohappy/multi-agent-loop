@@ -50,10 +50,21 @@ cp multi-agent-loop/.claude/commands/codex-review.md ~/.claude/commands/
 Then inside any Claude Code session:
 
 ```
+# Generate from prompt, then review loop
 > /codex-review plan Design a REST API for user management with JWT auth
 > /codex-review code Implement a rate limiter middleware for Express
-> /codex-review plan    (review the plan you just wrote in this conversation)
-> /codex-review code    (review the code you just wrote in this conversation)
+
+# Review an existing file
+> /codex-review plan --file docs/plan.md
+> /codex-review code --file src/auth.ts
+
+# Review an existing file with additional instructions
+> /codex-review plan --file docs/plan.md Add error handling details
+> /codex-review code --file src/auth.ts Refactor to use middleware pattern
+
+# Review what you just wrote in this conversation (no args)
+> /codex-review plan
+> /codex-review code
 ```
 
 This is the most convenient way — Claude Code drives the loop directly, calling Codex for review, reading feedback, and revising in-session. No separate process needed.
