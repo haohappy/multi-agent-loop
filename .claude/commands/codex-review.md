@@ -46,12 +46,12 @@ Three cases, checked in this order:
 Save the current content to a temp file, then call Codex to review it:
 
 ```bash
-CONTENT_FILE=$(mktemp)
+CONTENT_FILE=$(mktemp /tmp/codex-content-XXXXXX.md)
 cat > "$CONTENT_FILE" << 'CONTENT_EOF'
 <paste the current content here>
 CONTENT_EOF
 
-REVIEW_PROMPT_FILE=$(mktemp)
+REVIEW_PROMPT_FILE=$(mktemp /tmp/codex-prompt-XXXXXX.md)
 # For plan mode:
 cat > "$REVIEW_PROMPT_FILE" << 'PROMPT_EOF'
 You are a senior technical reviewer. Review the following development plan.
@@ -75,9 +75,10 @@ PROMPT_EOF
 # 1. Correctness  2. Performance  3. Error handling  4. Readability  5. Security  6. Testing
 
 # Combine prompt and content, pipe to codex
-cat "$REVIEW_PROMPT_FILE" "$CONTENT_FILE" | codex exec - --model gpt-5.4 --sandbox read-only --skip-git-repo-check --ephemeral -o /tmp/codex-review-output.txt 2>/dev/null
-REVIEW=$(cat /tmp/codex-review-output.txt)
-rm -f "$CONTENT_FILE" "$REVIEW_PROMPT_FILE" /tmp/codex-review-output.txt
+REVIEW_OUTPUT=$(mktemp /tmp/codex-review-output-XXXXXX.md)
+cat "$REVIEW_PROMPT_FILE" "$CONTENT_FILE" | codex exec - --model gpt-5.4 --sandbox read-only --skip-git-repo-check --ephemeral -o "$REVIEW_OUTPUT" 2>/dev/null
+REVIEW=$(cat "$REVIEW_OUTPUT")
+rm -f "$CONTENT_FILE" "$REVIEW_PROMPT_FILE" "$REVIEW_OUTPUT"
 echo "$REVIEW"
 ```
 
