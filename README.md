@@ -18,10 +18,10 @@ Claude Code generates plans or code, Codex reviews them, feedback flows back to 
 ```
 
 Each round:
-1. Claude Code produces output (plan or code) via `claude -p`
+1. Claude Code produces output (plan or code)
 2. Codex reviews it via `codex exec` against quality criteria
 3. If Codex says APPROVED, the loop ends
-4. Otherwise, feedback goes back to Claude Code for revision (using `--resume` to preserve context)
+4. Otherwise, feedback goes back to Claude Code for revision
 5. Repeat until approved or max rounds reached
 
 ## Prerequisites
@@ -29,42 +29,51 @@ Each round:
 ```bash
 npm install -g @anthropic-ai/claude-code   # Claude Code CLI
 npm install -g @openai/codex               # Codex CLI
-brew install jq                            # JSON processor
+brew install jq                            # JSON processor (for standalone mode)
 ```
 
-## Install
+## Two ways to use
+
+### Option 1: Slash command inside Claude Code (recommended)
+
+Use `/codex-review` directly within a Claude Code session. No extra install needed — just copy the command file:
 
 ```bash
-git clone https://github.com/anthropics/multi-agent-loop.git
+# Install the slash command (one-time setup)
+cp .claude/commands/codex-review.md ~/.claude/commands/
+
+# Or clone and copy
+git clone https://github.com/haohappy/multi-agent-loop.git
+cp multi-agent-loop/.claude/commands/codex-review.md ~/.claude/commands/
+```
+
+Then inside any Claude Code session:
+
+```
+> /codex-review plan Design a REST API for user management with JWT auth
+> /codex-review code Implement a rate limiter middleware for Express
+> /codex-review plan    (review the plan you just wrote in this conversation)
+> /codex-review code    (review the code you just wrote in this conversation)
+```
+
+This is the most convenient way — Claude Code drives the loop directly, calling Codex for review, reading feedback, and revising in-session. No separate process needed.
+
+### Option 2: Standalone shell command
+
+Run from any terminal as an independent process:
+
+```bash
+# Install
+git clone https://github.com/haohappy/multi-agent-loop.git
 cd multi-agent-loop
+./install.sh            # installs to /usr/local/bin
+# or: ./install.sh ~/bin
 
-# Option A: install to /usr/local/bin
-./install.sh
-
-# Option B: install to custom path
-./install.sh ~/bin
-
-# Option C: run directly
-chmod +x cc-review.sh
-./cc-review.sh --help
-```
-
-## Usage
-
-```bash
-# Generate and review a development plan
+# Usage
 cc-review plan "Build a REST API for user management with JWT auth"
-
-# Generate and review code
 cc-review code "Implement a rate limiter middleware for Express"
-
-# Review an existing plan file
 cc-review plan --file docs/plan.md
-
-# Review an existing code file with specific instructions
 cc-review code --file src/auth.ts "Refactor to use passport.js"
-
-# More review rounds with verbose output
 cc-review plan --max-rounds 10 --verbose "Design a real-time notification system"
 ```
 
