@@ -28,8 +28,10 @@ You are now entering an automated review loop with Codex. Follow these steps pre
 
 Extract from $ARGUMENTS:
 1. `mode` — first word: "plan" or "code"
-2. `file_path` — if the remaining text contains `--file <path>`, extract the path and remove `--file <path>` from the remaining text
-3. `prompt` — everything left after extracting mode and --file
+2. `file_path` — if the remaining text contains `--file <path>`, extract the path and remove it
+3. `max_rounds` — if the remaining text contains `--max-rounds <n>`, extract the number and remove it. Default: no limit (loop until approved)
+4. `codex_model` — if the remaining text contains `--model <model>`, extract the model name and remove it. Default: `gpt-5.4`
+5. `prompt` — everything left after extracting all flags above
 
 ### Step 1: Get initial content
 
@@ -76,7 +78,7 @@ PROMPT_EOF
 
 # Combine prompt and content, pipe to codex
 REVIEW_OUTPUT=$(mktemp /tmp/codex-review-output-XXXXXX.md)
-cat "$REVIEW_PROMPT_FILE" "$CONTENT_FILE" | codex exec - --model gpt-5.4 --sandbox read-only --skip-git-repo-check --ephemeral -o "$REVIEW_OUTPUT" 2>/dev/null
+cat "$REVIEW_PROMPT_FILE" "$CONTENT_FILE" | codex exec - --model <codex_model> --sandbox read-only --skip-git-repo-check --ephemeral -o "$REVIEW_OUTPUT" 2>/dev/null
 REVIEW=$(cat "$REVIEW_OUTPUT")
 rm -f "$CONTENT_FILE" "$REVIEW_PROMPT_FILE" "$REVIEW_OUTPUT"
 echo "$REVIEW"
@@ -94,7 +96,9 @@ If NOT approved, show the user a brief summary of Codex's feedback (first 5 line
 
 Go back to Step 2 with the revised content. Repeat until:
 - Codex outputs APPROVED, OR
-- User specified `--max-rounds <n>` and that limit is reached (no default limit — loop continues until approved unless explicitly capped)
+- `max_rounds` was set and the round count reaches it (no default limit — loop continues until approved unless explicitly capped)
+
+Use the parsed `codex_model` variable (default `gpt-5.4`) in the codex exec command. Use the parsed `max_rounds` variable to control loop termination.
 
 ### Step 6: Write Review Report
 

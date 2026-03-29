@@ -113,10 +113,10 @@ run_claude_raw() {
   [[ -n "$CLAUDE_MODEL" ]] && claude_args+=(--model "$CLAUDE_MODEL")
   [[ -n "$resume_session" ]] && claude_args+=(--resume "$resume_session")
 
-  if [[ "${MODE:-}" == "code" ]]; then
+  # Only grant file tools when there's a target file to edit.
+  # Without --file, Claude must output code directly in .result (no file tools).
+  if [[ "${MODE:-}" == "code" && -n "${TARGET_FILE:-}" ]]; then
     claude_args+=(--allowedTools "Read,Edit,Bash,Write")
-    # In code mode with a target file, instruct Claude to output the full file contents
-    # so we capture the actual code, not just a summary of changes.
   fi
 
   debug "Running: printf prompt | claude ${claude_args[*]}"
@@ -222,6 +222,7 @@ run_review_loop() {
   local initial_prompt="$2"
   local target_file="${3:-}"
   MODE="$mode"
+  TARGET_FILE="$target_file"
 
   setup_session
 
@@ -284,15 +285,11 @@ IMPORTANT: Output the COMPLETE code in your response. Do NOT just describe what 
     current_content=$(extract_result "$raw")
     claude_session=$(extract_session_id "$raw")
 
-    # In code mode with a target file, prefer the actual file on disk over .result
-    # because Claude may have edited the file but only returned a summary.
-    if [[ "$mode" == "code" && -n "$target_file" && -f "$target_file" ]]; then
-      local file_content
-      file_content=$(cat "$target_file")
-      if [[ -n "$file_content" ]]; then
-        debug "Code mode: using file contents from $target_file instead of .result"
-        current_content="$file_content"
-      fi
+    # In code mode with a target file, sync .result back to disk so file
+    # and current_content are always consistent.
+    if [[ "$mode" == "code" && -n "$target_file" && -n "$current_content" ]]; then
+      printf '%s\n' "$current_content" > "$target_file"
+      debug "Code mode: wrote .result back to $target_file"
     fi
 
     if [[ -z "$current_content" ]]; then
@@ -397,16 +394,10 @@ Please address ALL feedback points while staying true to the original requiremen
       warn "Claude Code returned empty revision, keeping previous version"
     else
       current_content="$revised"
-    fi
-
-    # In code mode with a target file, prefer the actual file on disk
-    # because Claude may have edited the file but only returned a summary.
-    if [[ "$mode" == "code" && -n "$target_file" && -f "$target_file" ]]; then
-      local file_content
-      file_content=$(cat "$target_file")
-      if [[ -n "$file_content" ]]; then
-        debug "Code mode: using file contents from $target_file instead of .result"
-        current_content="$file_content"
+      # In code mode with a target file, sync .result back to disk
+      if [[ "$mode" == "code" && -n "$target_file" ]]; then
+        printf '%s\n' "$current_content" > "$target_file"
+        debug "Code mode: wrote revised .result back to $target_file"
       fi
     fi
 
@@ -419,11 +410,9 @@ Please address ALL feedback points while staying true to the original requiremen
   warn "Reached maximum of ${MAX_ROUNDS} rounds without full approval."
   save_artifact "final.md" "$current_content"
   save_artifact "status.txt" "MAX_ROUNDS_REACHED at round $((round - 1))"
-  if [[ -n "$target_file" ]]; then
-    printf '%s\n' "$current_content" > "$target_file"
-    ok "Updated ${target_file} with latest version"
-  fi
-  log "Last version: ${CYAN}${SESSION_DIR}/final.md${NC}"
+  # Do NOT write unapproved content back to target file — only artifacts are saved.
+  log "Last version (unapproved): ${CYAN}${SESSION_DIR}/final.md${NC}"
+  [[ -n "$target_file" ]] && warn "Target file ${target_file} was NOT updated (review not approved)."
   return 1
 }
 
