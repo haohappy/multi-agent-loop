@@ -4,73 +4,14 @@
 >
 > Tools: Claude Code `/loopwise` slash command + OpenAI Codex CLI (GPT-5.4)
 
----
-
-## 1. What is Loopwise
-
-Loopwise is an automated review tool that creates a feedback loop between Claude Code and Codex:
-
-```
-Claude Code writes plan/code → Codex reviews → Claude Code revises → Codex re-reviews → loop until approved
-```
-
-It leverages two top-tier AI models (Claude Opus 4.6 + GPT-5.4) to cross-review each other, producing significantly higher quality output than either model alone.
-
-**Use cases:**
-- Architecture design review
-- Refactoring plan feasibility checks
-- Code implementation review
-- Anything that benefits from a "second pair of eyes"
-
-**Two ways to use:**
-- `/loopwise` — Slash command inside Claude Code (recommended)
-- `loopwise` — Standalone shell command
-
----
-
-## 2. Setup
-
-### 2.1 Install the slash command (recommended)
-
-```bash
-git clone https://github.com/haohappy/loopwise.git
-cp loopwise/.claude/commands/loopwise.md ~/.claude/commands/
-```
-
-After installation, `/loopwise` is available in any Claude Code session.
-
-### 2.2 Install the standalone command (optional)
-
-```bash
-cd loopwise
-./install.sh
-```
-
-### 2.3 Install Codex CLI
-
-```bash
-npm install -g @openai/codex
-codex --version
-# codex-cli 0.117.0
-```
-
-### 2.4 Verify model availability
-
-Different account types support different models:
-
-| Model | ChatGPT Account | API Account |
-|-------|----------------|-------------|
-| o3 | Not supported | Supported |
-| o4-mini | Not supported | Supported |
-| gpt-5.4 | Supported | Supported |
-
-If you encounter a `model is not supported` error, switch models with the `--model` flag.
 
 ---
 
 ## 3. Basic Usage
 
 ### 3.1 Review an existing file (most common)
+
+According to our experience, it's always a good practice to ask Claude to save its plan into a .md file first, whether it's a dev plan, refactoring plan, or anything else. Then have Codex review that file with --file before moving forward.
 
 ```
 /loopwise plan --file docs/REFACTORING_PLAN.md
