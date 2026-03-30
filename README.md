@@ -223,9 +223,13 @@ Write plans as Markdown files in your project's `docs/` directory. Benefits:
 - **Code review:** Also use `gpt-5.4` (understands project context)
 - Switch models: `/loopwise plan --model o3 --file docs/plan.md`
 
+### Verify before fixing
+
+Codex can hallucinate or misread context. Claude Code independently verifies each feedback point before acting on it — checking whether the issue actually exists in the code or plan. Invalid feedback is dismissed with a reason noted in the report, not blindly applied.
+
 ### Only fix what Codex flagged
 
-Don't over-revise. Only address the specific feedback points each round, otherwise:
+Don't over-revise. Only address the verified feedback points each round, otherwise:
 - You may introduce new issues
 - It becomes hard to track what changed
 - Codex may give unrelated feedback next round due to context shift

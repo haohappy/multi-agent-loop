@@ -123,7 +123,16 @@ Read the Codex review output. If the first line contains "APPROVED" (case-insens
 
 ### Step 4: Revise based on feedback
 
-If NOT approved, show the user a brief summary of Codex's feedback (first 5 lines), then revise your plan or code to address ALL feedback points. This revised version becomes the new current content.
+If NOT approved, show the user a brief summary of Codex's feedback (first 5 lines), then **independently verify each feedback point before acting on it**:
+
+1. For each issue Codex raised, check whether the problem actually exists in the current content (read the relevant code/section, trace the logic, verify the claim).
+2. If verified — fix it.
+3. If the issue does not actually exist (Codex hallucinated or misread the context) — skip it and note in the report that it was dismissed with a brief reason.
+4. If uncertain — err on the side of fixing, but mark it as "unverified fix" in the report.
+
+Do NOT blindly apply all feedback. Codex can make mistakes. Your job is to be the engineer who validates before changing.
+
+This revised version becomes the new current content.
 
 ### Step 5: Loop
 
@@ -204,6 +213,7 @@ Use `jq` via Bash to read/write the JSON file. Create `.loopwise/` directory if 
 - **Show progress**: At the start of each round, tell the user which round you're on (e.g., "Round 2/5: Sending to Codex for review...")
 - **Be transparent**: Show a brief preview of Codex's feedback each round
 - **Preserve context**: Each revision should build on the previous version, not start from scratch
-- **Don't over-revise**: Only change what Codex flagged, don't rewrite everything each round
+- **Verify before fixing**: Codex can hallucinate or misread context. Independently verify each feedback point actually exists before changing anything. Dismiss invalid feedback with a brief reason in the report.
+- **Don't over-revise**: Only change what Codex flagged and you verified, don't rewrite everything each round
 - **Codex model**: Default is `gpt-5.4`. User can specify a different model by adding `--model <model>` in their prompt
 - **Max rounds**: No default limit — loop runs until Codex approves. User can specify `--max-rounds <n>` to cap the iterations
