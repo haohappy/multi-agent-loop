@@ -208,7 +208,7 @@ When reviewing files with `--file`, Loopwise tracks review history in `.loopwise
 - **Content changed** — Starts a fresh review
 - **`--force`** — Bypasses history check
 
-## Best Practices
+## Best Practices of Using Loopwise
 
 ### File organization
 
