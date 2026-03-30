@@ -150,6 +150,58 @@ Each session creates a timestamped directory under `.loopwise/`:
     status.txt                  # APPROVED or MAX_ROUNDS_REACHED
 ```
 
+## Review Report
+
+After the review loop completes, Loopwise automatically generates a structured report in the current working directory:
+
+- Plan mode: `PLAN_REVIEW_REPORT.md`
+- Code mode: `CODE_REVIEW_REPORT.md`
+
+The report includes:
+- Review metadata (mode, status, total rounds, date, models used)
+- Round-by-round summary with key feedback from Codex and what Claude Code changed
+- Final result (approved or remaining issues)
+
+Example:
+
+```markdown
+# Codex Plan Review Report
+
+- **Mode**: plan
+- **Status**: APPROVED
+- **Total rounds**: 3
+- **Date**: 2026-03-30 14:20
+- **Models**: Claude Code (claude-opus-4-6) ↔ Codex (gpt-5.4)
+- **Input**: --file docs/REFACTORING_PLAN.md
+
+## Round-by-round summary
+
+### Round 1: Codex review #1
+- **Verdict**: FEEDBACK
+- **Key feedback**:
+  - Missing error handling for token expiration
+  - No rate limiting strategy
+- **Revision**: Claude Code addressed feedback:
+  - Added JWT refresh token flow
+  - Added rate limiting section
+
+### Round 2: Codex review #2
+- **Verdict**: APPROVED
+- **Comments**: No further issues found
+
+## Final result
+Plan approved after 3 rounds.
+```
+
+## Review History
+
+When reviewing files with `--file`, Loopwise tracks review history in `.loopwise/history.json` based on file content SHA-256 hash:
+
+- **Unchanged + previously approved** — Skipped automatically
+- **Unchanged + previously incomplete** — Offers to resume with prior feedback
+- **Content changed** — Starts a fresh review
+- **`--force`** — Bypasses history check
+
 ## Tips
 
 - **Plan reviews**: give detailed requirements so Claude Code produces a thorough plan and Codex has enough context to evaluate it.
