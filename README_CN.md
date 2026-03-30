@@ -127,6 +127,49 @@ loopwise plan --max-rounds 10 --verbose "设计一个实时通知系统"
     status.txt                  # APPROVED 或 MAX_ROUNDS_REACHED
 ```
 
+## Review 报告
+
+评审循环结束后，Loopwise 会在当前工作目录自动生成结构化报告：
+
+- Plan 模式：`PLAN_REVIEW_REPORT.md`
+- Code 模式：`CODE_REVIEW_REPORT.md`
+
+报告包含：
+- 评审元数据（模式、状态、总轮数、日期、使用的模型）
+- 逐轮摘要：Codex 的关键反馈 + Claude Code 的修改内容
+- 最终结果（已通过或剩余问题）
+
+示例：
+
+```markdown
+# Codex Plan Review Report
+
+- **Mode**: plan
+- **Status**: APPROVED
+- **Total rounds**: 3
+- **Date**: 2026-03-30 14:20
+- **Models**: Claude Code (claude-opus-4-6) ↔ Codex (gpt-5.4)
+- **Input**: --file docs/REFACTORING_PLAN.md
+
+## 逐轮摘要
+
+### Round 1: Codex review #1
+- **Verdict**: FEEDBACK
+- **Key feedback**:
+  - 缺少 token 过期的错误处理
+  - 没有限流策略
+- **Revision**: Claude Code 修复了反馈：
+  - 添加了 JWT refresh token 流程
+  - 添加了限流章节
+
+### Round 2: Codex review #2
+- **Verdict**: APPROVED
+- **Comments**: 没有更多问题
+
+## Final result
+计划在 3 轮后通过审查。
+```
+
 ## Review 历史
 
 使用 `--file` 审查文件时，工具会基于文件内容的 SHA-256 哈希自动追踪 review 历史（`.loopwise/history.json`）：
