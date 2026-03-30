@@ -4,9 +4,9 @@
   <img src="assets/logo.png" width="291" alt="Loopwise Logo">
 </div>
 
-# loopwise
+# Loopwise: 自动化计划/代码评审工具
 
-Claude Code 与 Codex CLI 之间的自动化 review 循环。
+Claude Code 与 Codex CLI 之间的自动化 review 循环。利用两个顶级 AI 模型（Claude Opus 4.6 + GPT-5.4）互相审查，产出质量显著高于单模型输出。
 
 Claude Code 生成计划或代码，Codex 自动审查，反馈回传给 Claude Code 进行修改，循环往复直到 Codex 批准通过。
 
@@ -29,6 +29,20 @@ Claude Code 生成计划或代码，Codex 自动审查，反馈回传给 Claude 
 3. 如果 Codex 输出 APPROVED，循环结束
 4. 否则，反馈回传给 Claude Code 进行修改
 5. 重复直到通过或达到最大轮数
+
+**适用场景：**
+- 架构设计文档评审
+- 重构计划可行性检查
+- 代码实现审查
+- 任何需要"第二双眼睛"的场景
+
+**两种使用方式：**
+- `/loopwise` — Claude Code 内的斜杠命令（推荐）
+- `loopwise` — 独立 shell 命令
+
+## 教程
+
+查看 [docs/TUTORIAL.md](docs/TUTORIAL.md) 获取包含真实评审案例的详细教程。也提供 [English version](docs/TUTORIAL_EN.md)。
 
 ## 前置要求
 
@@ -178,10 +192,6 @@ loopwise plan --max-rounds 10 --verbose "设计一个实时通知系统"
 - **文件未变 + 上次未通过** → 提示可以继续上次的反馈，或重新开始
 - **文件已变** → 正常开始新一轮 review
 - **强制重新审查**：使用 `--force` 跳过历史检查
-
-## 教程
-
-查看 [docs/TUTORIAL.md](docs/TUTORIAL.md) 获取包含真实评审案例的详细教程。也提供 [English version](docs/TUTORIAL_EN.md)。
 
 ## 使用建议
 
