@@ -14,7 +14,10 @@
       "Bash(/Users/hao/vibe/multi-agent-loop/cc-review.sh --help)",
       "Bash(/Users/hao/vibe/multi-agent-loop/.gitignore:*)",
       "Bash(gh repo:*)",
-      "Bash(ls ~/.claude/commands/*.md)"
+      "Bash(ls ~/.claude/commands/*.md)",
+      "Bash(bash -n /Users/hao/vibe/multi-agent-loop/loopwise.sh)",
+      "Bash(rm -f /Users/hao/.claude/commands/codex-review.md)",
+      "Bash(cp /Users/hao/vibe/multi-agent-loop/.claude/commands/loopwise.md /Users/hao/.claude/commands/loopwise.md)"
     ]
   }
 }

@@ -1,6 +1,6 @@
 [English](README.md)
 
-# cc-review
+# loopwise
 
 Claude Code 与 Codex CLI 之间的自动化 review 循环。
 
@@ -38,35 +38,35 @@ brew install jq                            # JSON 处理器（独立模式需要
 
 ### 方式一：在 Claude Code 内使用斜杠命令（推荐）
 
-在任何 Claude Code 会话中直接使用 `/codex-review`，只需复制命令文件即可：
+在任何 Claude Code 会话中直接使用 `/loopwise`，只需复制命令文件即可：
 
 ```bash
 # 安装斜杠命令（一次性设置）
-cp .claude/commands/codex-review.md ~/.claude/commands/
+cp .claude/commands/loopwise.md ~/.claude/commands/
 
 # 或者克隆后复制
 git clone https://github.com/haohappy/multi-agent-loop.git
-cp multi-agent-loop/.claude/commands/codex-review.md ~/.claude/commands/
+cp multi-agent-loop/.claude/commands/loopwise.md ~/.claude/commands/
 ```
 
 然后在 Claude Code 会话中：
 
 ```
 # 从 prompt 生成，然后进入 review 循环
-> /codex-review plan Design a REST API for user management with JWT auth
-> /codex-review code Implement a rate limiter middleware for Express
+> /loopwise plan Design a REST API for user management with JWT auth
+> /loopwise code Implement a rate limiter middleware for Express
 
 # 审查已有文件
-> /codex-review plan --file docs/plan.md
-> /codex-review code --file src/auth.ts
+> /loopwise plan --file docs/plan.md
+> /loopwise code --file src/auth.ts
 
 # 审查已有文件并附加指令
-> /codex-review plan --file docs/plan.md 补充错误处理细节
-> /codex-review code --file src/auth.ts 重构为中间件模式
+> /loopwise plan --file docs/plan.md 补充错误处理细节
+> /loopwise code --file src/auth.ts 重构为中间件模式
 
 # 审查当前对话中刚写的内容（不传参数）
-> /codex-review plan
-> /codex-review code
+> /loopwise plan
+> /loopwise code
 ```
 
 这是最方便的方式 — Claude Code 直接在当前会话中驱动循环，调用 Codex 审查、读取反馈、就地修改，无需额外进程。
@@ -83,11 +83,11 @@ cd multi-agent-loop
 # 或: ./install.sh ~/bin
 
 # 使用
-cc-review plan "构建一个带 JWT 认证的用户管理 REST API"
-cc-review code "实现一个 Express 限流中间件"
-cc-review plan --file docs/plan.md
-cc-review code --file src/auth.ts "重构为使用 passport.js"
-cc-review plan --max-rounds 10 --verbose "设计一个实时通知系统"
+loopwise plan "构建一个带 JWT 认证的用户管理 REST API"
+loopwise code "实现一个 Express 限流中间件"
+loopwise plan --file docs/plan.md
+loopwise code --file src/auth.ts "重构为使用 passport.js"
+loopwise plan --max-rounds 10 --verbose "设计一个实时通知系统"
 ```
 
 ## 默认模型
@@ -101,19 +101,19 @@ cc-review plan --max-rounds 10 --verbose "设计一个实时通知系统"
 
 | 参数 | 环境变量 | 默认值 | 说明 |
 |---|---|---|---|
-| `--max-rounds` | `CC_REVIEW_MAX_ROUNDS` | *（无限制）* | 最大 review 轮数（0 = 不限） |
-| `--claude-model` | `CC_REVIEW_CLAUDE_MODEL` | Claude Opus 4.6 | Claude 生成模型 |
-| `--codex-model` | `CC_REVIEW_CODEX_MODEL` | GPT-5.4 | Codex 审查模型 |
-| `--output-dir` | `CC_REVIEW_OUTPUT_DIR` | .cc-review | 会话产物目录 |
-| `--timeout` | `CC_REVIEW_TIMEOUT` | 300 | 每次 CLI 调用超时（秒） |
-| `--verbose` | `CC_REVIEW_VERBOSE` | false | 显示调试输出 |
+| `--max-rounds` | `LOOPWISE_MAX_ROUNDS` | *（无限制）* | 最大 review 轮数（0 = 不限） |
+| `--claude-model` | `LOOPWISE_CLAUDE_MODEL` | Claude Opus 4.6 | Claude 生成模型 |
+| `--codex-model` | `LOOPWISE_CODEX_MODEL` | GPT-5.4 | Codex 审查模型 |
+| `--output-dir` | `LOOPWISE_OUTPUT_DIR` | .loopwise | 会话产物目录 |
+| `--timeout` | `LOOPWISE_TIMEOUT` | 300 | 每次 CLI 调用超时（秒） |
+| `--verbose` | `LOOPWISE_VERBOSE` | false | 显示调试输出 |
 
 ## 产物输出
 
-每次会话在 `.cc-review/` 下创建一个带时间戳的目录：
+每次会话在 `.loopwise/` 下创建一个带时间戳的目录：
 
 ```
-.cc-review/
+.loopwise/
   20260329_143022_12345/
     round_1_claude.md           # 初始生成
     round_2_codex_review.md     # 第一轮审查
@@ -125,7 +125,7 @@ cc-review plan --max-rounds 10 --verbose "设计一个实时通知系统"
 
 ## Review 历史
 
-使用 `--file` 审查文件时，工具会基于文件内容的 SHA-256 哈希自动追踪 review 历史（`.cc-review/history.json`）：
+使用 `--file` 审查文件时，工具会基于文件内容的 SHA-256 哈希自动追踪 review 历史（`.loopwise/history.json`）：
 
 - **文件未变 + 已通过** → 自动跳过，提示"文件未修改，之前已通过审查"
 - **文件未变 + 上次未通过** → 提示可以继续上次的反馈，或重新开始
@@ -136,8 +136,8 @@ cc-review plan --max-rounds 10 --verbose "设计一个实时通知系统"
 
 - **计划审查**：提供详细的需求描述，让 Claude Code 生成完整的计划，Codex 才有足够的上下文进行评估。
 - **代码审查**：使用 `--file` 指向具体文件，进行聚焦审查。
-- **审查严格度**：编辑 `cc-review.sh` 中的 review prompt 来调节 Codex 的审查标准。可以更严格（"只有完全没有问题才能通过"）或更宽松（"整体方案合理即可通过"）。
-- **成本控制**：使用 `CC_REVIEW_CODEX_MODEL=gpt-4.1-mini` 或 `CC_REVIEW_MAX_ROUNDS=3` 来降低实验阶段的 API 开销。
+- **审查严格度**：编辑 `loopwise.sh` 中的 review prompt 来调节 Codex 的审查标准。可以更严格（"只有完全没有问题才能通过"）或更宽松（"整体方案合理即可通过"）。
+- **成本控制**：使用 `LOOPWISE_CODEX_MODEL=gpt-4.1-mini` 或 `LOOPWISE_MAX_ROUNDS=3` 来降低实验阶段的 API 开销。
 
 ## 许可证
 

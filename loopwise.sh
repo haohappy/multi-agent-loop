@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# cc-review: Claude Code ↔ Codex Automated Review Loop
+# loopwise: Claude Code ↔ Codex Automated Review Loop
 #
 # Automates the cycle:
 #   1. Claude Code produces a plan or code
@@ -9,10 +9,10 @@
 #   4. Repeat until Codex approves or max rounds reached
 #
 # Usage:
-#   cc-review plan "Build a user auth system with JWT"
-#   cc-review code "Implement the login endpoint"
-#   cc-review plan --file plan.md "Review and improve this plan"
-#   cc-review code --file src/auth.ts "Review and improve this file"
+#   loopwise plan "Build a user auth system with JWT"
+#   loopwise code "Implement the login endpoint"
+#   loopwise plan --file plan.md "Review and improve this plan"
+#   loopwise code --file src/auth.ts "Review and improve this file"
 #
 # Requirements: claude, codex, jq
 
@@ -20,12 +20,12 @@ set -euo pipefail
 
 # ─── Configuration ───────────────────────────────────────────────────────────
 
-MAX_ROUNDS="${CC_REVIEW_MAX_ROUNDS:-0}"  # 0 = unlimited
-CLAUDE_MODEL="${CC_REVIEW_CLAUDE_MODEL:-}"
-CODEX_MODEL="${CC_REVIEW_CODEX_MODEL:-gpt-5.4}"
-OUTPUT_DIR="${CC_REVIEW_OUTPUT_DIR:-.cc-review}"
-VERBOSE="${CC_REVIEW_VERBOSE:-false}"
-TIMEOUT="${CC_REVIEW_TIMEOUT:-300}"
+MAX_ROUNDS="${LOOPWISE_MAX_ROUNDS:-0}"  # 0 = unlimited
+CLAUDE_MODEL="${LOOPWISE_CLAUDE_MODEL:-}"
+CODEX_MODEL="${LOOPWISE_CODEX_MODEL:-gpt-5.4}"
+OUTPUT_DIR="${LOOPWISE_OUTPUT_DIR:-.loopwise}"
+VERBOSE="${LOOPWISE_VERBOSE:-false}"
+TIMEOUT="${LOOPWISE_TIMEOUT:-300}"
 
 # Colors
 RED='\033[0;31m'
@@ -39,7 +39,7 @@ NC='\033[0m'
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
-log()   { echo -e "${BLUE}[cc-review]${NC} $*"; }
+log()   { echo -e "${BLUE}[loopwise]${NC} $*"; }
 ok()    { echo -e "${GREEN}[ok]${NC} $*"; }
 warn()  { echo -e "${YELLOW}[!]${NC} $*"; }
 err()   { echo -e "${RED}[x]${NC} $*" >&2; }
@@ -228,7 +228,7 @@ run_review_loop() {
 
   echo ""
   echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo -e "${BOLD}  cc-review: Claude Code ↔ Codex Review Loop${NC}"
+  echo -e "${BOLD}  loopwise: Claude Code ↔ Codex Review Loop${NC}"
   echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
   echo -e "  Mode:       ${CYAN}$mode${NC}"
   echo -e "  Max rounds: ${CYAN}$MAX_ROUNDS${NC}"
@@ -420,32 +420,32 @@ Please address ALL feedback points while staying true to the original requiremen
 
 usage() {
   cat <<'EOF'
-cc-review: Automated Claude Code ↔ Codex review loop
+loopwise: Automated Claude Code ↔ Codex review loop
 
 Usage:
-  cc-review plan <prompt>                    Generate and review a development plan
-  cc-review code <prompt>                    Generate and review code
-  cc-review plan --file <path> [prompt]      Review an existing plan file
-  cc-review code --file <path> [prompt]      Review an existing code file
+  loopwise plan <prompt>                    Generate and review a development plan
+  loopwise code <prompt>                    Generate and review code
+  loopwise plan --file <path> [prompt]      Review an existing plan file
+  loopwise code --file <path> [prompt]      Review an existing code file
 
 Options:
   --max-rounds <n>     Maximum review cycles (default: 5)
   --claude-model <m>   Claude model override
   --codex-model <m>    Codex model (default: o3)
-  --output-dir <dir>   Output directory (default: .cc-review)
+  --output-dir <dir>   Output directory (default: .loopwise)
   --timeout <secs>     Timeout per CLI call in seconds (default: 300)
   --verbose            Show debug output
   --help               Show this help
 
 Environment variables:
-  CC_REVIEW_MAX_ROUNDS    CC_REVIEW_CLAUDE_MODEL    CC_REVIEW_CODEX_MODEL
-  CC_REVIEW_OUTPUT_DIR    CC_REVIEW_VERBOSE          CC_REVIEW_TIMEOUT
+  LOOPWISE_MAX_ROUNDS    LOOPWISE_CLAUDE_MODEL    LOOPWISE_CODEX_MODEL
+  LOOPWISE_OUTPUT_DIR    LOOPWISE_VERBOSE          LOOPWISE_TIMEOUT
 
 Examples:
-  cc-review plan "Build a REST API for user management with JWT auth"
-  cc-review code "Implement a rate limiter middleware for Express"
-  cc-review code --file src/auth.ts "Refactor to use passport.js"
-  CC_REVIEW_MAX_ROUNDS=10 cc-review plan "Design a microservices architecture"
+  loopwise plan "Build a REST API for user management with JWT auth"
+  loopwise code "Implement a rate limiter middleware for Express"
+  loopwise code --file src/auth.ts "Refactor to use passport.js"
+  LOOPWISE_MAX_ROUNDS=10 loopwise plan "Design a microservices architecture"
 EOF
 }
 

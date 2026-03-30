@@ -1,4 +1,4 @@
-# Codex Review Loop
+# Loopwise — Automated Review Loop
 
 Automated review loop: you (Claude Code) produce a plan or code, then Codex reviews it, you revise based on feedback, and the cycle repeats until Codex approves.
 
@@ -12,12 +12,12 @@ $ARGUMENTS should be in format: `<mode> [--file <path>] [prompt or instructions]
 
 Examples:
 ```
-/codex-review plan Design a REST API for user management with JWT auth
-/codex-review code Implement a rate limiter middleware for Express
-/codex-review plan --file docs/plan.md
-/codex-review code --file src/auth.ts Refactor to use passport.js
-/codex-review plan              (review the plan you just wrote in this conversation)
-/codex-review code              (review the code you just wrote in this conversation)
+/loopwise plan Design a REST API for user management with JWT auth
+/loopwise code Implement a rate limiter middleware for Express
+/loopwise plan --file docs/plan.md
+/loopwise code --file src/auth.ts Refactor to use passport.js
+/loopwise plan              (review the plan you just wrote in this conversation)
+/loopwise code              (review the code you just wrote in this conversation)
 ```
 
 ## Instructions
@@ -45,7 +45,7 @@ If `file_path` was provided, check for a previous review of the same file with t
    FILE_HASH=$(shasum -a 256 "<file_path>" | cut -d' ' -f1)
    ```
 
-2. Check if `.cc-review/history.json` exists and contains a record for this file+hash. The history file is a JSON array:
+2. Check if `.loopwise/history.json` exists and contains a record for this file+hash. The history file is a JSON array:
    ```json
    [
      {
@@ -54,7 +54,7 @@ If `file_path` was provided, check for a previous review of the same file with t
        "status": "APPROVED",
        "date": "2026-03-29 17:30",
        "rounds": 3,
-       "report": ".cc-review/20260329_173022_12345/REVIEW_REPORT.md",
+       "report": ".loopwise/20260329_173022_12345/REVIEW_REPORT.md",
        "last_feedback": null
      }
    ]
@@ -110,7 +110,7 @@ PROMPT_EOF
 # 1. Correctness  2. Performance  3. Error handling  4. Readability  5. Security  6. Testing
 
 # Combine prompt and content, pipe to codex
-REVIEW_OUTPUT=$(mktemp /tmp/codex-review-output-XXXXXX.md)
+REVIEW_OUTPUT=$(mktemp /tmp/loopwise-output-XXXXXX.md)
 cat "$REVIEW_PROMPT_FILE" "$CONTENT_FILE" | codex exec - --model <codex_model> --sandbox read-only --skip-git-repo-check --ephemeral -o "$REVIEW_OUTPUT" 2>/dev/null
 REVIEW=$(cat "$REVIEW_OUTPUT")
 rm -f "$CONTENT_FILE" "$REVIEW_PROMPT_FILE" "$REVIEW_OUTPUT"
@@ -178,10 +178,10 @@ After writing the file, tell the user the report has been saved to `PLAN_REVIEW_
 
 ### Step 7: Update review history (only when `--file` was provided)
 
-If `file_path` was provided, update `.cc-review/history.json`:
+If `file_path` was provided, update `.loopwise/history.json`:
 
 1. Compute the final file hash: `shasum -a 256 "<file_path>" | cut -d' ' -f1`
-2. Read the existing `.cc-review/history.json` (or start with `[]` if it doesn't exist)
+2. Read the existing `.loopwise/history.json` (or start with `[]` if it doesn't exist)
 3. Remove any existing record with the same `file` path (only keep the latest review per file)
 4. Append a new record:
    ```json
@@ -195,9 +195,9 @@ If `file_path` was provided, update `.cc-review/history.json`:
      "last_feedback": "<last Codex feedback if not approved, null if approved>"
    }
    ```
-5. Write the updated array back to `.cc-review/history.json`
+5. Write the updated array back to `.loopwise/history.json`
 
-Use `jq` via Bash to read/write the JSON file. Create `.cc-review/` directory if it doesn't exist.
+Use `jq` via Bash to read/write the JSON file. Create `.loopwise/` directory if it doesn't exist.
 
 ## Important rules
 
