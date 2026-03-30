@@ -208,12 +208,53 @@ When reviewing files with `--file`, Loopwise tracks review history in `.loopwise
 - **Content changed** — Starts a fresh review
 - **`--force`** — Bypasses history check
 
-## Tips
+## Best Practices
 
-- **Plan reviews**: give detailed requirements so Claude Code produces a thorough plan and Codex has enough context to evaluate it.
-- **Code reviews**: use `--file` to point at a specific file for focused review.
-- **Strictness**: edit the review prompts in `loopwise.sh` to tune Codex's review criteria. Make them stricter (`"only approve if there are zero issues"`) or more lenient (`"approve if the approach is fundamentally sound"`).
-- **Cost control**: use `LOOPWISE_CODEX_MODEL=gpt-4.1-mini` or `LOOPWISE_MAX_ROUNDS=3` to reduce API costs during experimentation.
+### File organization
+
+Write plans as Markdown files in your project's `docs/` directory. Benefits:
+- Version controlled
+- Each round produces a git diff
+- Team can see the evolution
+
+### Model selection
+
+- **Plan review:** Use `gpt-5.4` (default, strong reasoning)
+- **Code review:** Also use `gpt-5.4` (understands project context)
+- Switch models: `/loopwise plan --model o3 --file docs/plan.md`
+
+### Only fix what Codex flagged
+
+Don't over-revise. Only address the specific feedback points each round, otherwise:
+- You may introduce new issues
+- It becomes hard to track what changed
+- Codex may give unrelated feedback next round due to context shift
+
+### Commit after each round
+
+Commit and push after fixing each round of feedback:
+
+```bash
+git commit -m "Refactoring plan v3: fix Codex round 2 feedback (7 issues)"
+```
+
+This creates a clear record and lets your team review the evolution.
+
+### Know when to stop
+
+- **APPROVED** — Codex approved, ready to implement
+- **Round 3-4 feedback is operational details** — Architecture is stable, ready to implement
+- **Round 5 still has architecture-level issues** — May need to rethink the approach
+
+> For complex systems, don't chase APPROVED — what matters is that feedback shifts from architecture-level to implementation-level.
+
+### Tune review strictness
+
+Edit the review prompts in `loopwise.sh` to adjust Codex's review criteria. Make them stricter (`"only approve if there are zero issues"`) or more lenient (`"approve if the approach is fundamentally sound"`).
+
+### Cost control
+
+Use `LOOPWISE_CODEX_MODEL=gpt-4.1-mini` or `LOOPWISE_MAX_ROUNDS=3` to reduce API costs during experimentation.
 
 ## License
 
