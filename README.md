@@ -74,11 +74,14 @@ Then inside any Claude Code session:
 > /loopwise plan Design a REST API for user management with JWT auth
 > /loopwise code Implement a rate limiter middleware for Express
 
-# Review an existing file
+# Review an existing file  
+# using --file the best practice, the targeted review will be done efficiently.
+
 > /loopwise plan --file docs/plan.md
 > /loopwise code --file src/auth.ts
 
 # Review an existing file with additional instructions
+# This is more for senior developers who have specific needs
 > /loopwise plan --file docs/plan.md Add error handling details
 > /loopwise code --file src/auth.ts Refactor to use middleware pattern
 
