@@ -45,8 +45,8 @@ Use `/loopwise` directly within a Claude Code session. No extra install needed â
 cp .claude/commands/loopwise.md ~/.claude/commands/
 
 # Or clone and copy
-git clone https://github.com/haohappy/multi-agent-loop.git
-cp multi-agent-loop/.claude/commands/loopwise.md ~/.claude/commands/
+git clone https://github.com/haohappy/loopwise.git
+cp loopwise/.claude/commands/loopwise.md ~/.claude/commands/
 ```
 
 Then inside any Claude Code session:
@@ -77,8 +77,8 @@ Run from any terminal as an independent process:
 
 ```bash
 # Install
-git clone https://github.com/haohappy/multi-agent-loop.git
-cd multi-agent-loop
+git clone https://github.com/haohappy/loopwise.git
+cd loopwise
 ./install.sh            # installs to /usr/local/bin
 # or: ./install.sh ~/bin
 

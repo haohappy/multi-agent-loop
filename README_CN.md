@@ -45,8 +45,8 @@ brew install jq                            # JSON 处理器（独立模式需要
 cp .claude/commands/loopwise.md ~/.claude/commands/
 
 # 或者克隆后复制
-git clone https://github.com/haohappy/multi-agent-loop.git
-cp multi-agent-loop/.claude/commands/loopwise.md ~/.claude/commands/
+git clone https://github.com/haohappy/loopwise.git
+cp loopwise/.claude/commands/loopwise.md ~/.claude/commands/
 ```
 
 然后在 Claude Code 会话中：
@@ -77,8 +77,8 @@ cp multi-agent-loop/.claude/commands/loopwise.md ~/.claude/commands/
 
 ```bash
 # 安装
-git clone https://github.com/haohappy/multi-agent-loop.git
-cd multi-agent-loop
+git clone https://github.com/haohappy/loopwise.git
+cd loopwise
 ./install.sh            # 安装到 /usr/local/bin
 # 或: ./install.sh ~/bin
 
