@@ -136,6 +136,10 @@ loopwise plan --max-rounds 10 --verbose "设计一个实时通知系统"
 - **文件已变** → 正常开始新一轮 review
 - **强制重新审查**：使用 `--force` 跳过历史检查
 
+## 教程
+
+查看 [docs/TUTORIAL.md](docs/TUTORIAL.md) 获取包含真实评审案例的详细教程。
+
 ## 使用建议
 
 - **计划审查**：提供详细的需求描述，让 Claude Code 生成完整的计划，Codex 才有足够的上下文进行评估。

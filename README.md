@@ -133,6 +133,10 @@ Each session creates a timestamped directory under `.loopwise/`:
     status.txt                  # APPROVED or MAX_ROUNDS_REACHED
 ```
 
+## Tutorial
+
+See [docs/TUTORIAL.md](docs/TUTORIAL.md) for a step-by-step guide with a real-world review example.
+
 ## Tips
 
 - **Plan reviews**: give detailed requirements so Claude Code produces a thorough plan and Codex has enough context to evaluate it.
