@@ -141,6 +141,28 @@ You can also copy the config template to your home directory:
 cp .loopwise.conf.example ~/.loopwise.conf
 ```
 
+### Auto-approve permissions for `/loopwise`
+
+When running `/loopwise` inside Claude Code, you may be prompted to confirm each Bash command. To skip these confirmations, add the following to your `~/.claude/settings.json`:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(CONTENT_FILE=*)",
+      "Bash(REVIEW_OUTPUT=*)",
+      "Bash(FILE_HASH=*)",
+      "Bash(codex exec *)",
+      "Bash(shasum *)",
+      "Bash(cat *loopwise*)",
+      "Bash(mkdir -p .loopwise*)"
+    ]
+  }
+}
+```
+
+This allows the specific Bash patterns that `/loopwise` uses (temp file creation, codex invocation, hash computation, history read/write). Merge these into your existing `permissions.allow` array if you already have other rules.
+
 ## Output
 
 Each session creates a timestamped directory under `.loopwise/`:
