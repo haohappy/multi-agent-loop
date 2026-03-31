@@ -54,7 +54,7 @@ If `file_path` was provided, check for a previous review of the same file with t
    shasum -a 256 "<file_path>" | cut -d' ' -f1
    ```
 
-2. Check if `.loopwise/history.json` exists and contains a record for this file+hash.
+2. Check if `.loopwise/history.json` exists. If the file does not exist, treat as empty (`[]`) and proceed to step 4 (no match). If the file exists but contains malformed JSON, treat as empty (`[]`) and proceed.
 
 3. **If a matching record exists (same file path AND same hash)**:
    - If `status` is `APPROVED`: Tell the user **"This file was already reviewed and approved on {date} ({rounds} rounds). Content is unchanged (hash: {hash:.8}). Skipping review."** and show the path to the previous report. **Stop here.**
@@ -74,10 +74,13 @@ Three cases, checked in this order:
 
 **CRITICAL RULES for this step (MUST follow — violations cause permission prompts that block automation):**
 1. **NEVER use `$()` command substitution in any Bash call.**
-2. **NEVER combine multiple commands with `&&`, `||`, `;`, `|` pipes (except the single codex exec pipe), `{ }` groups, or `for` loops into one Bash call.**
-3. **NEVER use `echo`, `cat`, `git diff`, or shell redirections to build content.** Use the Write tool instead.
-4. **Use Write tool for ALL file creation. Use Read tool for ALL file reading.** The ONLY Bash call allowed is the single `cat ... | codex exec ...` pipe and `rm -f` cleanup.
-5. **When collecting content from multiple files:** Read each file with the Read tool, concatenate in memory, then Write the combined result. Do NOT use shell loops or cat chains.
+2. **NEVER combine multiple commands with `&&`, `||`, `;`, `{ }` groups, or `for` loops into one Bash call.**
+3. **Use Write tool for ALL file creation. Use Read tool for ALL file reading.**
+4. **When collecting content from multiple files:** Read each with the Read tool, concatenate in memory, then Write the combined result. Do NOT use shell loops or cat chains.
+5. **Only THREE Bash patterns are allowed:**
+   - `cat /tmp/loopwise-prompt.md | codex exec - ...` (the single codex pipe)
+   - `rm -f /tmp/loopwise-*.md` (cleanup)
+   - `shasum -a 256 <file>` (hash computation)
 
 **Step 2a:** Use the **Write** tool to save the current content to `/tmp/loopwise-content.md`.
 
@@ -195,7 +198,7 @@ Append the full content to review at the end of the prompt file (after `=== PLAN
 
 **If `background` is false (default — foreground):**
 ```bash
-cat /tmp/loopwise-prompt.md | codex exec - --model <codex_model> --sandbox read-only --skip-git-repo-check --ephemeral -o /tmp/loopwise-output.md 2>/dev/null
+cat /tmp/loopwise-prompt.md | codex exec - --model <codex_model> --sandbox read-only --skip-git-repo-check --ephemeral -o /tmp/loopwise-output.md 2>/tmp/loopwise-stderr.log
 ```
 
 **If `background` is true:**
@@ -203,14 +206,14 @@ Only the FIRST Codex call runs in background. Tell the user: **"Review started i
 
 Run the Codex call using Bash with `run_in_background: true`:
 ```bash
-cat /tmp/loopwise-prompt.md | codex exec - --model <codex_model> --sandbox read-only --skip-git-repo-check --ephemeral -o /tmp/loopwise-output.md 2>/dev/null
+cat /tmp/loopwise-prompt.md | codex exec - --model <codex_model> --sandbox read-only --skip-git-repo-check --ephemeral -o /tmp/loopwise-output.md 2>/tmp/loopwise-stderr.log
 ```
 
 Before launching the background call, create a job record:
 ```bash
 mkdir -p .loopwise/jobs
 ```
-Then use the **Write** tool to create `.loopwise/jobs/loopwise-job-latest.json`:
+Generate a unique job ID from the current timestamp (e.g., `job-20260331-163000`). Then use the **Write** tool to create `.loopwise/jobs/<job_id>.json`:
 ```json
 {
   "status": "running",
@@ -233,7 +236,7 @@ After the background command completes (you will be notified), continue with Ste
 
 **Step 2e:** Clean up:
 ```bash
-rm -f /tmp/loopwise-content.md /tmp/loopwise-prompt.md /tmp/loopwise-output.md
+rm -f /tmp/loopwise-content.md /tmp/loopwise-prompt.md /tmp/loopwise-output.md /tmp/loopwise-stderr.log
 ```
 
 ### Step 3: Parse and check verdict
@@ -243,7 +246,7 @@ Parse the Codex output as JSON. Apply this fallback chain:
 1. **Try direct JSON parse** of the full output
 2. **Extract JSON block** if wrapped in markdown fences (```json...```) or find the outermost `{...}`
 3. **Retry once**: if parse fails, re-run Step 2 with the same content but append to the prompt: "You MUST respond with valid JSON only, no markdown fences, no other text."
-4. **Synthesize degraded payload** if retry also fails:
+4. **Synthesize degraded payload** if retry also fails. Also check `/tmp/loopwise-stderr.log` (Read tool) for error context to include in the degraded report:
    ```json
    {
      "schema_version": 1,
@@ -276,7 +279,7 @@ For EACH finding, **independently verify before acting**:
 1. **Read the relevant section** of the content. Check whether the issue actually exists.
 2. If **verified** — fix it. Set finding disposition to `verified`.
 3. If the issue **does not exist** (hallucination/misread) — skip it. Set disposition to `dismissed` with a brief reason.
-4. If **uncertain** — fix it but set disposition to `unverified_fix`.
+4. If **uncertain** — do NOT auto-fix. Flag it for the user: show the finding and ask if they want it fixed. Set disposition to `deferred` if the user declines, or `verified` if they confirm.
 
 **Confidence is for display/ranking only. NEVER suppress critical or high findings based on confidence.**
 
