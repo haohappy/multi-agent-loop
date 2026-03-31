@@ -147,7 +147,7 @@ Configure via CLI flags or environment variables:
 
 | Flag | Environment Variable | Default | Description |
 |---|---|---|---|
-| `--max-rounds` | `LOOPWISE_MAX_ROUNDS` | *(unlimited)* | Maximum review cycles (0 = no limit) |
+| `--max-rounds` | `LOOPWISE_MAX_ROUNDS` | 20 | Maximum review cycles (hard cap: 20) |
 | `--claude-model` | `LOOPWISE_CLAUDE_MODEL` | Claude Opus 4.6 | Claude model for generation |
 | `--codex-model` | `LOOPWISE_CODEX_MODEL` | GPT-5.4 | Codex model for reviews |
 | `--output-dir` | `LOOPWISE_OUTPUT_DIR` | .loopwise | Session output directory |

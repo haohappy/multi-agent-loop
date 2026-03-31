@@ -147,7 +147,7 @@ loopwise plan --max-rounds 10 --verbose "设计一个实时通知系统"
 
 | 参数 | 环境变量 | 默认值 | 说明 |
 |---|---|---|---|
-| `--max-rounds` | `LOOPWISE_MAX_ROUNDS` | *（无限制）* | 最大 review 轮数（0 = 不限） |
+| `--max-rounds` | `LOOPWISE_MAX_ROUNDS` | 20 | 最大 review 轮数（硬上限 20 轮） |
 | `--claude-model` | `LOOPWISE_CLAUDE_MODEL` | Claude Opus 4.6 | Claude 生成模型 |
 | `--codex-model` | `LOOPWISE_CODEX_MODEL` | GPT-5.4 | Codex 审查模型 |
 | `--output-dir` | `LOOPWISE_OUTPUT_DIR` | .loopwise | 会话产物目录 |
