@@ -4,16 +4,17 @@ Automated review loop: you (Claude Code) produce a plan or code, then Codex revi
 
 ## Arguments
 
-$ARGUMENTS should be in format: `<mode> [--file <path>] [flags] [prompt or instructions]`
+$ARGUMENTS should be in format: `<mode> [--file <path>] [--since <ref>] [flags] [prompt or instructions]`
 
 - **mode**: `plan` or `code`
 - **--file \<path\>**: Optional. Path to an existing file to use as initial content for review (skip generation).
+- **--since \<ref\>**: Optional. Review code changes since a git reference. Supports commit hash (`abc1234`), relative ref (`HEAD~5`), branch name (`main`), or date (`2026-03-30`). Collects `git diff <ref>..HEAD`. Code mode only.
 - **--adversarial**: Optional. Enable adversarial review mode (skeptical stance, deeper scrutiny).
 - **--background**: Optional. Run the first Codex review in the background. You'll be notified when it completes. Use `/loopwise-status` to check progress.
 - **--max-rounds \<n\>**: Optional. Limit review rounds. Default: no limit.
 - **--model \<model\>**: Optional. Codex model. Default: `gpt-5.4`.
 - **--force**: Optional. Bypass review history check.
-- **prompt**: What to generate or review. If both `--file` and prompt are omitted, review the work you just produced in this conversation.
+- **prompt**: What to generate or review. If none of `--file`, `--since`, or prompt are provided, review the work you just produced in this conversation.
 
 Examples:
 ```
@@ -22,6 +23,10 @@ Examples:
 /loopwise plan --file docs/plan.md --adversarial
 /loopwise code --file src/auth.ts --adversarial focus on auth and data isolation
 /loopwise plan Design a REST API for user management with JWT auth
+/loopwise code --since HEAD~5
+/loopwise code --since main
+/loopwise code --since 2026-03-30
+/loopwise code --since abc1234 --adversarial
 /loopwise plan --file docs/plan.md --background
 /loopwise plan
 /loopwise code
@@ -36,12 +41,15 @@ You are now entering an automated review loop with Codex. Follow these steps pre
 Extract from $ARGUMENTS:
 1. `mode` — first word: "plan" or "code"
 2. `file_path` — if `--file <path>` present, extract and remove
-3. `adversarial` — if `--adversarial` present, set true and remove. Default: false
-4. `background` — if `--background` present, set true and remove. Default: false
-5. `max_rounds` — if `--max-rounds <n>` present, extract and remove. Default: no limit
-6. `codex_model` — if `--model <model>` present, extract and remove. Default: `gpt-5.4`
-7. `force` — if `--force` present, set true and remove. Default: false
-8. `prompt` — everything remaining after extracting all flags
+3. `since_ref` — if `--since <ref>` present, extract and remove. The ref can be a commit hash, relative ref (HEAD~5), branch name, or date (2026-03-30). Code mode only.
+4. `adversarial` — if `--adversarial` present, set true and remove. Default: false
+5. `background` — if `--background` present, set true and remove. Default: false
+6. `max_rounds` — if `--max-rounds <n>` present, extract and remove. Default: no limit
+7. `codex_model` — if `--model <model>` present, extract and remove. Default: `gpt-5.4`
+8. `force` — if `--force` present, set true and remove. Default: false
+9. `prompt` — everything remaining after extracting all flags
+
+**Validation:** `--file` and `--since` are mutually exclusive. If both are provided, tell the user and stop. `--since` is only valid in `code` mode; if used with `plan` mode, tell the user and stop.
 
 ### Step 0.5: Check review history (only when `--file` is provided)
 
@@ -64,11 +72,50 @@ If `file_path` was provided, check for a previous review of the same file with t
 
 ### Step 1: Get initial content
 
-Three cases, checked in this order:
+Four cases, checked in this order:
 
 1. **`--file` was provided**: Read the file using the Read tool. The file contents become the **initial content**.
-2. **A prompt was given (no --file)**: Generate the plan or code as requested. This is your **initial content**.
-3. **Neither --file nor prompt**: Gather the most recent plan or code you produced in this conversation.
+
+2. **`--since` was provided** (code mode only): Collect the git diff as the initial content.
+
+   **Step 1a:** Verify this is a git repo:
+   ```bash
+   git rev-parse --is-inside-work-tree
+   ```
+   If not a git repo, tell the user and stop.
+
+   **Step 1b:** If `since_ref` looks like a date (YYYY-MM-DD format), convert it to a commit ref:
+   ```bash
+   git log --since="<date>" --reverse --format="%H" --max-count=1
+   ```
+   Use the returned commit hash as the actual ref. If no commits found, tell the user "No commits found since <date>" and stop.
+
+   **Step 1c:** Get the diff (single Bash call):
+   ```bash
+   git diff <since_ref>..HEAD --diff-filter=d -- . ':!node_modules' ':!vendor' ':!*.min.js' ':!*.min.css' ':!*.lock'
+   ```
+   If the diff is empty, tell the user "No changes found between <since_ref> and HEAD" and stop.
+   If the diff exceeds 5000 lines, tell the user "Diff too large (N lines). Use --file to review specific files." and stop.
+
+   **Step 1d:** Also get the list of changed files for context:
+   ```bash
+   git diff <since_ref>..HEAD --name-only --diff-filter=d
+   ```
+
+   **Step 1e:** Also get the commit log for context:
+   ```bash
+   git log <since_ref>..HEAD --oneline
+   ```
+
+   Tell the user: **"Reviewing N commits (since <ref>), M files changed."**
+
+   The **initial content** is the combined diff + file list + commit log. For each changed file that is NOT deleted, also Read the full current file content using the Read tool and include it after the diff. This gives Codex both the diff context and the full file to review.
+
+   **Note:** In `--since` mode, the review loop does NOT modify code (same as `/loopwise-gate` — advisory only). Claude Code presents the findings but does not auto-fix, since the changes span multiple commits and files. The user decides what to fix.
+
+3. **A prompt was given (no --file, no --since)**: Generate the plan or code as requested. This is your **initial content**.
+
+4. **None of the above**: Gather the most recent plan or code you produced in this conversation.
 
 ### Step 2: Send to Codex for review
 
