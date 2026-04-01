@@ -198,16 +198,14 @@ Append the full content to review at the end of the prompt file (after `=== PLAN
 
 **If `background` is false (default — foreground):**
 ```bash
-cat /tmp/loopwise-prompt.md | codex exec - --model <codex_model> --sandbox read-only --skip-git-repo-check --ephemeral -o /tmp/loopwise-output.md 2>/tmp/loopwise-stderr.log
-```
+cat /tmp/loopwise-prompt.md | codex exec - --model <codex_model> --sandbox read-only --skip-git-repo-check --ephemeral -o /tmp/loopwise-output.md ```
 
 **If `background` is true:**
 Only the FIRST Codex call runs in background. Tell the user: **"Review started in background. You'll be notified when it completes. Use `/loopwise-status` to check progress."**
 
 Run the Codex call using Bash with `run_in_background: true`:
 ```bash
-cat /tmp/loopwise-prompt.md | codex exec - --model <codex_model> --sandbox read-only --skip-git-repo-check --ephemeral -o /tmp/loopwise-output.md 2>/tmp/loopwise-stderr.log
-```
+cat /tmp/loopwise-prompt.md | codex exec - --model <codex_model> --sandbox read-only --skip-git-repo-check --ephemeral -o /tmp/loopwise-output.md ```
 
 Before launching the background call, create a job record:
 ```bash
@@ -236,7 +234,7 @@ After the background command completes (you will be notified), continue with Ste
 
 **Step 2e:** Clean up:
 ```bash
-rm -f /tmp/loopwise-content.md /tmp/loopwise-prompt.md /tmp/loopwise-output.md /tmp/loopwise-stderr.log
+rm -f /tmp/loopwise-content.md /tmp/loopwise-prompt.md /tmp/loopwise-output.md
 ```
 
 ### Step 3: Parse and check verdict
@@ -246,7 +244,7 @@ Parse the Codex output as JSON. Apply this fallback chain:
 1. **Try direct JSON parse** of the full output
 2. **Extract JSON block** if wrapped in markdown fences (```json...```) or find the outermost `{...}`
 3. **Retry once**: if parse fails, re-run Step 2 with the same content but append to the prompt: "You MUST respond with valid JSON only, no markdown fences, no other text."
-4. **Synthesize degraded payload** if retry also fails. Also check `/tmp/loopwise-stderr.log` (Read tool) for error context to include in the degraded report:
+4. **Synthesize degraded payload** if retry also fails. Check the Bash tool's stderr output for error context to include in the degraded report:
    ```json
    {
      "schema_version": 1,

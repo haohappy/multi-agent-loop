@@ -102,7 +102,7 @@ Append the diff after `=== DIFF TO REVIEW ===`.
 
 **Call Codex** (single Bash):
 ```bash
-cat /tmp/loopwise-gate-prompt.md | codex exec - --model <codex_model> --sandbox read-only --skip-git-repo-check --ephemeral -o /tmp/loopwise-gate-output.md 2>/dev/null
+cat /tmp/loopwise-gate-prompt.md | codex exec - --model <codex_model> --sandbox read-only --skip-git-repo-check --ephemeral -o /tmp/loopwise-gate-output.md
 ```
 
 **Read output** with Read tool, then **clean up**:
