@@ -52,6 +52,28 @@ npm install -g @openai/codex               # Codex CLI
 brew install jq                            # JSON 处理器（独立模式需要）
 ```
 
+### Codex 认证配置
+
+Codex CLI 支持两种认证方式，Loopwise 都能使用：
+
+```bash
+# 方式 A：ChatGPT 账号登录（交互式）
+codex login
+
+# 方式 B：OpenAI API Key
+export OPENAI_API_KEY=sk-xxx
+```
+
+| 认证方式 | 可用模型 |
+|---------|---------|
+| ChatGPT 账号 | gpt-5.4, gpt-4.1 |
+| API Key | gpt-5.4, o3, o4-mini（取决于 tier） |
+
+如果某个模型报 `model is not supported`，用 `--model` 切换：
+```
+/loopwise plan --file docs/plan.md --model gpt-4.1
+```
+
 ## 两种使用方式
 
 ### 方式一：在 Claude Code 内使用斜杠命令（推荐）

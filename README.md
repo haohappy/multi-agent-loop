@@ -52,6 +52,28 @@ npm install -g @openai/codex               # Codex CLI
 brew install jq                            # JSON processor (for standalone mode)
 ```
 
+### Codex authentication
+
+Codex CLI supports two authentication methods. Either one works with Loopwise:
+
+```bash
+# Option A: ChatGPT account login (interactive)
+codex login
+
+# Option B: OpenAI API key
+export OPENAI_API_KEY=sk-xxx
+```
+
+| Auth Method | Typical Models |
+|-------------|---------------|
+| ChatGPT account | gpt-5.4, gpt-4.1 |
+| API key | gpt-5.4, o3, o4-mini (depends on tier) |
+
+If a model returns `model is not supported`, switch with `--model`:
+```
+/loopwise plan --file docs/plan.md --model gpt-4.1
+```
+
 ## Two ways to use
 
 ### Option 1: Slash command inside Claude Code (recommended)
